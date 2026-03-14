@@ -1,3 +1,13 @@
+// types/initiative.ts  ← tipos del dominio
+
+// ─── Media ───────────────────────────────────────────────────────────────────
+
+export interface StrapiImageFormats {
+  medium?: { url: string; width: number; height: number };
+  small?: { url: string; width: number; height: number };
+  thumbnail?: { url: string; width: number; height: number };
+}
+
 export interface StrapiImage {
   id: number;
   documentId: string;
@@ -6,7 +16,7 @@ export interface StrapiImage {
   caption: string | null;
   width: number | null;
   height: number | null;
-  formats: any;
+  formats: StrapiImageFormats | null;
   hash: string;
   ext: string;
   mime: string;
@@ -19,54 +29,40 @@ export interface StrapiImage {
   publishedAt: string;
 }
 
-export interface Foundation {
-  id: number;
-  documentId: string;
-
-  name: string;
-  nit: string | null;
-  siglas: string | null;
-
-  createdAt: string;
-  updatedAt: string;
-  publishedAt: string;
-}
+// ─── Category ─────────────────────────────────────────────────────────────────
+// Strapi: initiatives-category → { id, documentId, name }
 
 export interface Category {
   id: number;
   documentId: string;
   name: string;
 }
-export interface foundation {
+
+// ─── Foundation (referencia desde Initiative) ─────────────────────────────────
+
+export interface FoundationRef {
+  id: number;
+  documentId: string;
   name: string;
+  siglas: string | null;
 }
+
+// ─── Initiative ───────────────────────────────────────────────────────────────
+// Campo real en Strapi: initiatives_categories (manyToMany, array)
+// Campo imagen: images (Multiple Media, array)
 
 export interface Initiative {
   id: number;
   documentId: string;
   title: string;
-  foundation: foundation;
   objective: string;
   description: string;
   createdAt: string;
-  category: Category; // Confirmado: campo 'category'
-  images: {
-    url: string;
-    formats?: {
-      medium?: { url: string };
-      small?: { url: string };
-    };
-  }[];
-}
+  updatedAt: string;
+  publishedAt: string;
 
-export interface StrapiResponse<T> {
-  data: T;
-  meta: {
-    pagination: {
-      page: number;
-      pageSize: number;
-      pageCount: number;
-      total: number;
-    };
-  };
+  // Relaciones — solo presentes cuando se usa populate
+  foundation?: FoundationRef;
+  initiatives_categories?: Category[]; // manyToMany — siempre array
+  images?: StrapiImage[];
 }

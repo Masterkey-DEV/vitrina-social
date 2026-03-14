@@ -21,7 +21,7 @@ export default factories.createCoreController(
         const foundations = await strapi.entityService.findMany(
           "api::foundation.foundation",
           {
-            filters: { users_permissions_user: userId },
+            filters: { usuario: userId },
           },
         );
 

@@ -9,7 +9,7 @@ export default (plugin: any) => {
     const roleMap: any = {
       member: "member",
       entrepreneur: "entrepreneur",
-      foundation: "Foundation",
+      foundation: "foundation",
     };
 
     const roleName = roleMap[role?.toLowerCase()];

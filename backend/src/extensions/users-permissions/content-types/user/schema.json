@@ -70,13 +70,13 @@
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::foundation.foundation",
-      "inversedBy": "users_permissions_user"
+      "inversedBy": "usuario"
     },
     "initiatives": {
       "type": "relation",
       "relation": "manyToMany",
       "target": "api::iniciative.iniciative",
-      "inversedBy": "users_permissions_users"
+      "inversedBy": "users"
     },
     "products": {
       "type": "relation",

@@ -1,7 +1,3 @@
-/**
- * foundation controller
- */
-
 import { factories } from "@strapi/strapi";
 
 export default factories.createCoreController(
@@ -13,50 +9,33 @@ export default factories.createCoreController(
       }
 
       const userId = ctx.state.user.id;
-      console.log("Usuario autenticado:", userId);
+      const userDocId = ctx.state.user.documentId as string;
 
-      /* ------------------------------------------------ */
-      /* 1. Verificar que el usuario no tenga fundación   */
-      /* ------------------------------------------------ */
+      // 1. Verificar que el usuario no tenga fundación ya registrada
+      const existing = await strapi
+        .documents("api::foundation.foundation")
+        .findMany({
+          filters: { usuario: { id: { $eq: userId } } },
+        });
 
-      const existing = await strapi.entityService.findMany(
-        "api::foundation.foundation",
-        {
-          filters: {
-            users_permissions_user: userId,
-          },
-        },
-      );
-
-      if (Array.isArray(existing) && existing.length > 0) {
+      if (existing.length > 0) {
         return ctx.badRequest("Ya tienes una fundación registrada");
       }
 
-      /* ------------------------------------------------ */
-      /* 2. Crear la fundación                            */
-      /* ------------------------------------------------ */
-
-      const foundation = await strapi.entityService.create(
-        "api::foundation.foundation",
-        {
+      // 2. Crear la fundación vinculada al usuario
+      const foundation = await strapi
+        .documents("api::foundation.foundation")
+        .create({
           data: {
             ...ctx.request.body.data,
-            users_permissions_user: userId,
-          },
-        },
-      );
-
-      /* ------------------------------------------------ */
-      /* 3. Obtener rol foundation                        */
-      /* ------------------------------------------------ */
-
-      const foundationRole = await strapi
-        .query("plugin::users-permissions.role")
-        .findOne({
-          where: {
-            type: "foundation",
+            usuario: userDocId, // campo correcto del schema, documentId para v5
           },
         });
+
+      // 3. Obtener rol foundation
+      const foundationRole = await strapi
+        .query("plugin::users-permissions.role")
+        .findOne({ where: { type: "foundation" } });
 
       if (!foundationRole) {
         return ctx.internalServerError(
@@ -64,40 +43,23 @@ export default factories.createCoreController(
         );
       }
 
-      /* ------------------------------------------------ */
-      /* 4. Asignar rol al usuario                        */
-      /* ------------------------------------------------ */
-
-      await strapi.entityService.update(
-        "plugin::users-permissions.user",
-        userId,
-        {
-          data: {
-            role: foundationRole.id,
-          },
-        },
-      );
-
-      /* ------------------------------------------------ */
-      /* 5. Generar JWT nuevo con rol actualizado         */
-      /* ------------------------------------------------ */
-
-      const freshJwt = strapi.plugin("users-permissions").service("jwt").issue({
-        id: userId,
+      // 4. Asignar rol al usuario
+      await strapi.documents("plugin::users-permissions.user").update({
+        documentId: userDocId,
+        data: { role: foundationRole.id },
       });
 
-      /* ------------------------------------------------ */
-      /* 6. Respuesta final corregida                     */
-      /* ------------------------------------------------ */
+      // 5. Generar JWT nuevo con rol actualizado
+      const freshJwt = strapi
+        .plugin("users-permissions")
+        .service("jwt")
+        .issue({ id: userId });
 
+      // 6. Respuesta
       const sanitized = await this.sanitizeOutput(foundation, ctx);
-      // Forzamos el cast a 'any' para evitar el error TS2698 de spread
       const transformed = this.transformResponse(sanitized) as any;
 
-      return {
-        ...transformed,
-        jwt: freshJwt,
-      };
+      return { ...transformed, jwt: freshJwt };
     },
 
     async update(ctx) {
@@ -107,35 +69,35 @@ export default factories.createCoreController(
 
       const userId = ctx.state.user.id;
       const role = ctx.state.user.role;
-      const { id } = ctx.params;
+      const { id } = ctx.params; // documentId en Strapi v5
 
+      // FIX: minúscula "foundation", no "foundation"
       if (role.type !== "foundation") {
         return ctx.forbidden("Solo fundaciones pueden editar su perfil");
       }
 
-      const foundation = (await strapi.entityService.findOne(
-        "api::foundation.foundation",
-        id,
-        {
-          populate: ["users_permissions_user"],
-        },
-      )) as any;
+      const foundation = (await strapi
+        .documents("api::foundation.foundation")
+        .findOne({
+          documentId: id,
+          populate: ["usuario"],
+        })) as any;
 
       if (!foundation) {
         return ctx.notFound("Fundación no encontrada");
       }
 
-      if (foundation.users_permissions_user?.id !== userId) {
+      // FIX: campo correcto "usuario"
+      if (foundation.usuario?.id !== userId) {
         return ctx.forbidden("No tienes permiso para editar esta fundación");
       }
 
-      const updated = await strapi.entityService.update(
-        "api::foundation.foundation",
-        id,
-        {
+      const updated = await strapi
+        .documents("api::foundation.foundation")
+        .update({
+          documentId: id,
           data: ctx.request.body.data,
-        },
-      );
+        });
 
       const sanitized = await this.sanitizeOutput(updated, ctx);
       return this.transformResponse(sanitized);
@@ -150,30 +112,32 @@ export default factories.createCoreController(
       const role = ctx.state.user.role;
       const { id } = ctx.params;
 
+      // FIX: minúscula "foundation"
       if (role.type !== "foundation") {
         return ctx.forbidden("Solo fundaciones pueden eliminar su perfil");
       }
 
-      const foundation = (await strapi.entityService.findOne(
-        "api::foundation.foundation",
-        id,
-        {
-          populate: ["users_permissions_user"],
-        },
-      )) as any;
+      const foundation = (await strapi
+        .documents("api::foundation.foundation")
+        .findOne({
+          documentId: id,
+          populate: ["usuario"],
+        })) as any;
 
       if (!foundation) {
         return ctx.notFound("Fundación no encontrada");
       }
 
-      if (foundation.users_permissions_user?.id !== userId) {
+      // FIX: campo correcto "usuario" (antes decía users_permissions_user)
+      if (foundation.usuario?.id !== userId) {
         return ctx.forbidden("No tienes permiso para eliminar esta fundación");
       }
 
-      const deleted = await strapi.entityService.delete(
-        "api::foundation.foundation",
-        id,
-      );
+      const deleted = await strapi
+        .documents("api::foundation.foundation")
+        .delete({
+          documentId: id,
+        });
 
       const sanitized = await this.sanitizeOutput(deleted, ctx);
       return this.transformResponse(sanitized);

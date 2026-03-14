@@ -31,14 +31,9 @@
       "type": "media",
       "multiple": false,
       "required": true,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
+      "allowedTypes": ["images", "files", "videos", "audios"]
     },
-    "users_permissions_user": {
+    "usuario": {
       "type": "relation",
       "relation": "oneToOne",
       "target": "plugin::users-permissions.user",

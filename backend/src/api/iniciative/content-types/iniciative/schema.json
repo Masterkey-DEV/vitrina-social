@@ -27,10 +27,7 @@
       "type": "media",
       "multiple": true,
       "required": true,
-      "allowedTypes": [
-        "images",
-        "files"
-      ]
+      "allowedTypes": ["images", "files"]
     },
     "foundation": {
       "type": "relation",
@@ -44,7 +41,7 @@
       "target": "api::initiatives-category.initiatives-category",
       "mappedBy": "initiatives"
     },
-    "users_permissions_users": {
+    "users": {
       "type": "relation",
       "relation": "manyToMany",
       "target": "plugin::users-permissions.user",
