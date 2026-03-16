@@ -4,7 +4,7 @@ export interface Initiative {
   title: string;
   objective?: string;
   foundation?: { name: string; siglas: string };
-  users_permissions_users?: { id: number }[];
+  usuario?: { id: number }[];
   initiatives_categories?: { name: string }[];
   createdAt: string;
 }

@@ -12,17 +12,18 @@ export function useMemberInitiatives(jwt: string | null) {
     if (!jwt) return;
     try {
       // URL pattern verified from working MemberDashboard:
-      // filters by user id (numeric) via users_permissions_users relation
+      // filters by user id (numeric) via usuario relation
       const res = await fetch(
         `${API_URL}/api/iniciatives` +
-          `?filters[users_permissions_users][id][$eq]=${userId}` +
+          `?filters[usuario][id][$eq]=${userId}` +
           `&populate[foundation][fields][0]=name` +
           `&populate[foundation][fields][1]=siglas` +
           `&populate[initiatives_categories][fields][0]=name` +
-          `&populate[users_permissions_users][fields][0]=id`,
+          `&populate[usuario][fields][0]=id`,
         { headers: { Authorization: `Bearer ${jwt}` } },
       );
       const data = await res.json();
+      console.log("datos de los miebros:" ,data)
       setInitiatives(data.data || []);
     } finally {
       setLoading(false);

@@ -103,8 +103,8 @@ export default function EntrepreneurDashboard() {
     if (!jwt || !user?.id) return;
     setDataLoading(true);
     try {
-      // CAMBIO CLAVE: Usar 'users_permissions_user' en lugar de 'owner'
-      const query = `filters[users_permissions_user][id][$eq]=${user.id}&populate=images`;
+      // CAMBIO CLAVE: Usar 'usuario' en lugar de 'owner'
+      const query = `filters[usuario][id][$eq]=${user.id}&populate=images`;
 
       const res = await fetch(`${API_URL}/api/products?${query}`, {
         headers: { Authorization: `Bearer ${jwt}` },
@@ -178,7 +178,7 @@ export default function EntrepreneurDashboard() {
         stock: parseInt(form.stock) || 0,
         featured: form.featured,
         // CAMBIO: Aquí también usamos el nombre técnico de la relación
-        users_permissions_user: user.id,
+        usuario: user.id,
         ...(imageId ? { images: [imageId] } : {}),
       };
 

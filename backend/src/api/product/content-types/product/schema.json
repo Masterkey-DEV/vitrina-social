@@ -46,7 +46,7 @@
       "target": "api::product-category.product-category",
       "mappedBy": "products"
     },
-    "users_permissions_user": {
+    "usuario": {
       "type": "relation",
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user",

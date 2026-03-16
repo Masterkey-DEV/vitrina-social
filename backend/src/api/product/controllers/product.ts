@@ -59,7 +59,7 @@ export default factories.createCoreController(
         "api::product.product",
         id,
         {
-          populate: ["foundation", "foundation.users_permissions_user"] as any,
+          populate: ["foundation", "foundation.usuario"] as any,
         },
       )) as any;
 
@@ -73,7 +73,7 @@ export default factories.createCoreController(
           return ctx.forbidden("No tienes permiso para editar este producto");
         }
 
-        if (product.foundation.users_permissions_user?.id !== userId) {
+        if (product.foundation.usuario?.id !== userId) {
           return ctx.forbidden("No tienes permiso para editar este producto");
         }
       }
@@ -116,7 +116,7 @@ export default factories.createCoreController(
           return ctx.forbidden("No tienes permiso para eliminar este producto");
         }
 
-        if (product.foundation.users_permissions_user?.id !== userId) {
+        if (product.foundation.usuario?.id !== userId) {
           return ctx.forbidden("No tienes permiso para eliminar este producto");
         }
       }

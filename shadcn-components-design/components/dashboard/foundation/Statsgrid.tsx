@@ -14,7 +14,7 @@ export function StatsGrid({
   products,
 }: StatsGridProps) {
   const totalMembers = initiatives.reduce(
-    (a, i) => a + (i.users_permissions_users?.length ?? 0),
+    (a, i) => a + (i.usuario?.length ?? 0),
     0,
   );
 

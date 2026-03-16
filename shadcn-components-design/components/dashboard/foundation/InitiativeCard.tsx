@@ -39,7 +39,7 @@ export function InitiativeCard({
         )}
         <p className="text-xs text-muted-foreground flex items-center gap-1">
           <Users className="h-3 w-3" />
-          {initiative.users_permissions_users?.length ?? 0} miembros
+          {initiative.usuario?.length ?? 0} miembros
         </p>
       </div>
 

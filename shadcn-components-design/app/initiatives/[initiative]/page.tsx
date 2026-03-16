@@ -40,7 +40,7 @@ export default async function InitiativeDetailPage({ params }: PageProps) {
     : "/placeholder.jpg";
   const categoryName =
     data.initiatives_categories?.[0]?.name || "Sin categoría";
-  const memberCount = data.users_permissions_users?.length || 0;
+  const memberCount = data.usuario?.length || 0;
 
   return (
     <main className="min-h-screen bg-background">
@@ -188,7 +188,7 @@ export default async function InitiativeDetailPage({ params }: PageProps) {
               <div className="p-6 rounded-3xl border bg-card space-y-4">
                 <JoinInitiativeButton
                   initiativeId={data.documentId}
-                  initialMembers={data.users_permissions_users || []}
+                  initialMembers={data.usuario || []}
                 />
                 <p className="text-center text-xs text-muted-foreground leading-relaxed">
                   Al unirte, formas parte activa de esta iniciativa y sus
