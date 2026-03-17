@@ -22,14 +22,16 @@ export default factories.createCoreController(
         return ctx.badRequest("Ya tienes una fundación registrada");
       }
 
-      // 2. Crear la fundación vinculada al usuario
+      // 2. Crear la fundación vinculada al usuario y publicarla automáticamente
       const foundation = await strapi
         .documents("api::foundation.foundation")
         .create({
           data: {
             ...ctx.request.body.data,
-            usuario: userDocId, // campo correcto del schema, documentId para v5
+            usuario: userDocId,
           },
+          // ✅ Se publica inmediatamente al crearse
+          status: "published",
         });
 
       // 3. Obtener rol foundation
@@ -69,9 +71,8 @@ export default factories.createCoreController(
 
       const userId = ctx.state.user.id;
       const role = ctx.state.user.role;
-      const { id } = ctx.params; // documentId en Strapi v5
+      const { id } = ctx.params;
 
-      // FIX: minúscula "foundation", no "foundation"
       if (role.type !== "foundation") {
         return ctx.forbidden("Solo fundaciones pueden editar su perfil");
       }
@@ -87,7 +88,6 @@ export default factories.createCoreController(
         return ctx.notFound("Fundación no encontrada");
       }
 
-      // FIX: campo correcto "usuario"
       if (foundation.usuario?.id !== userId) {
         return ctx.forbidden("No tienes permiso para editar esta fundación");
       }
@@ -112,7 +112,6 @@ export default factories.createCoreController(
       const role = ctx.state.user.role;
       const { id } = ctx.params;
 
-      // FIX: minúscula "foundation"
       if (role.type !== "foundation") {
         return ctx.forbidden("Solo fundaciones pueden eliminar su perfil");
       }
@@ -128,7 +127,6 @@ export default factories.createCoreController(
         return ctx.notFound("Fundación no encontrada");
       }
 
-      // FIX: campo correcto "usuario" (antes decía users_permissions_user)
       if (foundation.usuario?.id !== userId) {
         return ctx.forbidden("No tienes permiso para eliminar esta fundación");
       }
