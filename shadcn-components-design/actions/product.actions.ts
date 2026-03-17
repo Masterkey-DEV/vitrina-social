@@ -6,38 +6,26 @@ import { API_URL } from "@/const/api";
  */
 export async function getProductCategories() {
   try {
-    // Usamos fields para no traer datos innecesarios y optimizar la velocidad
-    const query = new URLSearchParams({
-      "fields[0]": "name",
-      "fields[1]": "slug",
-    });
-
+    // ✅ product-category solo tiene "name" — sin slug
     const res = await fetch(
-      `${API_URL}/api/product-categories?${query.toString()}`,
-      {
-        next: { revalidate: 3600 }, // Cache por 1 hora
-      },
+      `${API_URL}/api/product-categories?fields[0]=name`,
+      { next: { revalidate: 3600 } },
     );
 
     if (!res.ok) throw new Error("Error al obtener categorías");
 
     const json = await res.json();
 
-    // Mapeo compatible con Strapi v4 (attributes) y v5 (directo)
     const data = json.data.map((item: any) => ({
       id: item.id,
-      name: item.name || item.attributes?.name,
-      slug: item.slug || item.attributes?.slug,
+      documentId: item.documentId,
+      name: item.name,
     }));
 
     return { success: true, data };
   } catch (error) {
     console.error("Fetch Categories Error:", error);
-    return {
-      success: false,
-      data: [],
-      error: "No se pudieron cargar las categorías",
-    };
+    return { success: false, data: [], error: "No se pudieron cargar las categorías" };
   }
 }
 
@@ -49,7 +37,6 @@ export async function getProducts(categoryName?: string | null) {
     const params = new URLSearchParams();
     params.append("populate", "*");
 
-    // Ajuste: Si usas slugs en tus botones, es mejor filtrar por [$eq] de slug
     if (categoryName && categoryName !== "all" && categoryName !== "Todos") {
       params.append("filters[product_categories][name][$eq]", categoryName);
     }
@@ -62,16 +49,10 @@ export async function getProducts(categoryName?: string | null) {
 
     const json = await res.json();
 
-    // En Strapi v4/v5 los datos vienen en json.data
-    // Si necesitas limpiar los atributos, puedes mapearlos aquí
     return { success: true, data: json.data as Product[] };
   } catch (error) {
     console.error("Fetch Products Error:", error);
-    return {
-      success: false,
-      data: [],
-      error: "No se pudieron cargar los productos",
-    };
+    return { success: false, data: [], error: "No se pudieron cargar los productos" };
   }
 }
 
@@ -91,8 +72,7 @@ export async function getProductBySlug(slug: string) {
 
     return {
       success: true,
-      data:
-        json.data && json.data.length > 0 ? (json.data[0] as Product) : null,
+      data: json.data && json.data.length > 0 ? (json.data[0] as Product) : null,
     };
   } catch (error) {
     console.error("Fetch Product Error:", error);
