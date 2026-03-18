@@ -5,6 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Building2, MapPin, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { FoundationCTA } from "@/components/Foundationcta";
+
 
 export const metadata = {
   title: "Fundaciones Aliadas | Reintegration Portal",
@@ -18,7 +20,7 @@ export default async function FoundationsPage() {
 
   return (
     <main className="min-h-screen bg-background">
-      {/* Hero de la Sección */}
+      {/* Hero */}
       <section className="bg-primary/5 border-b border-primary/10 py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <Badge
@@ -50,7 +52,6 @@ export default async function FoundationsPage() {
               {/* Logo */}
               <div className="p-8 flex items-center gap-6 border-b border-border/40 bg-muted/20">
                 <div className="relative h-20 w-20 rounded-2xl overflow-hidden border-2 border-background bg-white shadow-sm shrink-0">
-                  {/* ✅ FIX: getMediaUrl maneja Cloudinary (absoluta) y local (relativa) */}
                   <Image
                     src={getMediaUrl(foundation.image?.url, "/placeholder-logo.jpg")}
                     alt={foundation.name}
@@ -98,28 +99,9 @@ export default async function FoundationsPage() {
         )}
       </section>
 
-      {/* CTA */}
-      <section className="max-w-7xl mx-auto px-4 pb-24">
-        <div className="bg-foreground text-background rounded-[3rem] p-12 md:p-20 text-center space-y-8 relative overflow-hidden">
-          <div className="relative z-10 space-y-4">
-            <h2 className="text-3xl md:text-5xl font-black italic uppercase tracking-tighter">
-              ¿Eres parte de una <span className="text-primary">Fundación</span>?
-            </h2>
-            <p className="max-w-xl mx-auto text-background/60 text-lg">
-              Únete a nuestra red para potenciar iniciativas de reconciliación y
-              emprendimientos comunitarios.
-            </p>
-            <div className="pt-6">
-              <Link href="/register">
-                <button className="bg-primary text-white px-10 py-5 rounded-2xl font-black tracking-widest uppercase hover:scale-105 transition-transform shadow-xl shadow-primary/20">
-                  Registrar mi Organización
-                </button>
-              </Link>
-            </div>
-          </div>
-          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
-        </div>
-      </section>
+      {/* CTA para registrar organización */}
+      <FoundationCTA />
+
     </main>
   );
 }

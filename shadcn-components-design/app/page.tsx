@@ -1,7 +1,8 @@
 import { HomeTabs } from "@/components/HomeTabs";
 import { HeroSection } from "@/components/Hero-section";
 import { SuccessStories } from "@/components/success-stories";
-import { SupportSection } from "@/components/support-section";
+import { SupportSection } from "@/components/SupportSection";
+
 
 export default function Page() {
   return (
