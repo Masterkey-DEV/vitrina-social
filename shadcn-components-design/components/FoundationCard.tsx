@@ -47,7 +47,7 @@ export function FoundationCard({ foundation }: Props) {
           </div>
 
           <p className="text-sm text-white/80">
-            {foundation.initiatives?.length ?? 0} iniciativas activas
+            {foundation.iniciatives?.length ?? 0} iniciativas activas
           </p>
 
           <div className="h-[2px] w-0 bg-primary group-hover:w-full transition-all duration-500" />
