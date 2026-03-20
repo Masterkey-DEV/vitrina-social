@@ -1,4 +1,4 @@
-// @/app/fundaciones/page.tsx
+// /app/fundaciones/page.tsx
 import { getFoundations } from "@/actions/foundation.actions";
 import { getMediaUrl } from "@/lib/media";
 import Image from "next/image";
@@ -6,7 +6,6 @@ import Link from "next/link";
 import { Building2, MapPin, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { FoundationCTA } from "@/components/Foundationcta";
-
 
 export const metadata = {
   title: "Fundaciones Aliadas | Vitrina Social",
@@ -64,9 +63,17 @@ export default async function FoundationsPage() {
                   <h2 className="text-xl font-black italic uppercase tracking-tighter leading-none group-hover:text-primary transition-colors">
                     {foundation.name}
                   </h2>
+                  {/* Ubicación combinando departamento y ciudad */}
                   <div className="flex items-center gap-1 text-muted-foreground mt-2 text-xs font-bold">
                     <MapPin className="h-3 w-3" />
-                    {foundation.location || "Sede Nacional"}
+                    {(() => {
+                      const department = foundation.department;
+                      const city = foundation.city;
+                      if (department && city) return `${city}, ${department}`;
+                      if (city) return city;
+                      if (department) return department;
+                      return foundation.location || "Sede Nacional";
+                    })()}
                   </div>
                 </div>
               </div>
@@ -101,7 +108,6 @@ export default async function FoundationsPage() {
 
       {/* CTA para registrar organización */}
       <FoundationCTA />
-
     </main>
   );
 }

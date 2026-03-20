@@ -1,5 +1,3 @@
-// @/app/foundations/[siglas]/page.tsx
-
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -8,11 +6,21 @@ import { getMediaUrl } from "@/lib/media";
 import type { Initiative } from "@/types/initiative";
 import { Badge } from "@/components/ui/badge";
 import {
-  ArrowUpRight, ArrowLeft, Building2, Lightbulb,
-  Users, MapPin, Globe, ExternalLink, MessageCircle,
+  ArrowUpRight,
+  ArrowLeft,
+  Building2,
+  Lightbulb,
+  Users,
+  MapPin,
+  Globe,
+  ExternalLink,
+  MessageCircle,
 } from "lucide-react";
 import {
-  SiWhatsapp, SiInstagram, SiFacebook, SiX,
+  SiWhatsapp,
+  SiInstagram,
+  SiFacebook,
+  SiX,
 } from "react-icons/si";
 import { FaLinkedin } from "react-icons/fa";
 import type { LucideIcon } from "lucide-react";
@@ -23,7 +31,6 @@ interface Props {
 }
 
 // ── Tipos ──────────────────────────────────────────────────────────────────
-
 interface SocialLink {
   href: string;
   label: string;
@@ -33,7 +40,6 @@ interface SocialLink {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
 function cleanWebsiteLabel(url: string): string {
   return url.replace(/https?:\/\/(www\.)?/, "").split("/")[0];
 }
@@ -47,7 +53,6 @@ function cleanPhone(phone: string): string {
 }
 
 // ── Metadata ───────────────────────────────────────────────────────────────
-
 export async function generateMetadata({ params }: Props) {
   const { siglas } = await params;
   const result = await getFoundationBySiglas(siglas);
@@ -65,7 +70,6 @@ export async function generateMetadata({ params }: Props) {
 }
 
 // ── Page ───────────────────────────────────────────────────────────────────
-
 export default async function FoundationDetailPage({ params }: Props) {
   const { siglas } = await params;
   const result = await getFoundationBySiglas(siglas);
@@ -76,6 +80,11 @@ export default async function FoundationDetailPage({ params }: Props) {
   const initiativeCount = initiatives.length;
   const memberCount = initiatives.reduce((acc, i) => acc + (i.users?.length ?? 0), 0);
   const logoUrl = getMediaUrl(foundation.image?.url, "/holder_fundaciones.jpeg");
+  const hasLocation = foundation.city || foundation.department;
+
+const fullLocation = [foundation.city, foundation.department]
+  .filter(Boolean)
+  .join(" • ");
 
   // Construye los links de redes — solo los que tienen valor
   const socialLinks: SocialLink[] = [
@@ -125,7 +134,6 @@ export default async function FoundationDetailPage({ params }: Props) {
 
   return (
     <main className="min-h-screen bg-[#FDFDFD]">
-
       {/* ── NAV ── */}
       <nav className="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
         <Link
@@ -137,18 +145,19 @@ export default async function FoundationDetailPage({ params }: Props) {
           </div>
           VOLVER
         </Link>
-        <Badge variant="outline" className="rounded-full border-slate-200 text-slate-400 font-medium">
+        <Badge
+          variant="outline"
+          className="rounded-full border-slate-200 text-slate-400 font-medium"
+        >
           Perfil Verificado
         </Badge>
       </nav>
 
       {/* ── HERO ── */}
       <section className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 py-8">
-
         {/* Columna principal */}
         <div className="lg:col-span-8 space-y-8">
           <div className="flex flex-col md:flex-row gap-8 items-start">
-
             {/* Logo */}
             <div className="w-32 h-32 rounded-[2.5rem] bg-white shadow-2xl shadow-slate-200 border border-slate-50 flex-shrink-0 relative overflow-hidden">
               <Image
@@ -160,7 +169,6 @@ export default async function FoundationDetailPage({ params }: Props) {
                 priority
               />
             </div>
-
             <div className="space-y-4">
               <div className="flex flex-wrap gap-2 items-center">
                 {foundation.siglas && (
@@ -168,18 +176,21 @@ export default async function FoundationDetailPage({ params }: Props) {
                     {foundation.siglas}
                   </Badge>
                 )}
-                {foundation.location && (
-                  <div className="flex items-center gap-1.5 text-slate-400 text-sm font-medium">
-                    <MapPin className="h-4 w-4" />
-                    {foundation.location}
-                  </div>
-                )}
+                {hasLocation ? (
+  <div className="flex items-center gap-1.5 text-slate-400 text-sm font-medium">
+    <MapPin className="h-4 w-4" />
+    {fullLocation}
+  </div>
+) : foundation.location && (
+  <div className="flex items-center gap-1.5 text-slate-400 text-sm font-medium">
+    <MapPin className="h-4 w-4" />
+    {foundation.location}
+  </div>
+)}
               </div>
-
               <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-slate-900 leading-none italic uppercase">
                 {foundation.name}
               </h1>
-
               {foundation.description && (
                 <p className="text-lg text-slate-500 leading-relaxed max-w-2xl">
                   {foundation.description}
@@ -205,7 +216,9 @@ export default async function FoundationDetailPage({ params }: Props) {
                   <Users className="h-5 w-5 text-primary" />
                 </div>
                 <p className="text-3xl font-black text-slate-900">{memberCount}</p>
-                <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Miembros</p>
+                <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">
+                  Miembros
+                </p>
               </div>
             )}
           </div>
@@ -213,7 +226,9 @@ export default async function FoundationDetailPage({ params }: Props) {
           {/* Misión */}
           {foundation.objective && (
             <div className="p-8 rounded-[2rem] bg-primary/5 border border-primary/10">
-              <p className="text-xs font-black text-primary uppercase tracking-widest mb-3">Misión</p>
+              <p className="text-xs font-black text-primary uppercase tracking-widest mb-3">
+                Misión
+              </p>
               <p className="text-xl font-medium text-slate-700 leading-relaxed italic">
                 "{foundation.objective}"
               </p>
@@ -225,9 +240,9 @@ export default async function FoundationDetailPage({ params }: Props) {
         <div className="lg:col-span-4">
           <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 shadow-xl shadow-slate-100/50 sticky top-8">
             <h3 className="font-black text-slate-900 mb-6 flex items-center gap-2 italic uppercase text-sm tracking-widest">
-              Contacto <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+              Contacto
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
             </h3>
-
             {socialLinks.length > 0 ? (
               <div className="space-y-3">
                 {socialLinks.map(({ href, label, icon: Icon, color, bg }) => (
@@ -285,7 +300,6 @@ export default async function FoundationDetailPage({ params }: Props) {
             </div>
             <Building2 className="h-12 w-12 text-slate-200" />
           </div>
-
           {initiativeCount > 0 ? (
             <div className="grid md:grid-cols-2 gap-8">
               {initiatives.map((init) => (
@@ -303,13 +317,11 @@ export default async function FoundationDetailPage({ params }: Props) {
           )}
         </div>
       </section>
-
     </main>
   );
 }
 
 // ── Subcomponente ──────────────────────────────────────────────────────────
-
 function InitiativeCard({ initiative }: { initiative: Initiative }) {
   return (
     <Link
