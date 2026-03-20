@@ -441,9 +441,11 @@ export interface ApiFoundationFoundation extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
+    city: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    department: Schema.Attribute.String;
     description: Schema.Attribute.String;
     facebook: Schema.Attribute.String;
     image: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'> &
@@ -460,6 +462,7 @@ export interface ApiFoundationFoundation extends Struct.CollectionTypeSchema {
       'api::foundation.foundation'
     > &
       Schema.Attribute.Private;
+    location: Schema.Attribute.String;
     name: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;

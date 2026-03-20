@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { de } from "zod/v4/locales";
 
 export const formSchema = z.object({
   // ── Acceso (requeridos) ──
@@ -14,6 +15,8 @@ export const formSchema = z.object({
   objective: z.string().optional(),
   description: z.string().optional(),
   location: z.string().optional(),
+  department: z.string().optional(),
+  city: z.string().optional(),
 
   // ── Contacto y redes (todos opcionales) ──
   whatsapp: z.string().optional(),

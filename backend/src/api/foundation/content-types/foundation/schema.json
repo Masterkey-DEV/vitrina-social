@@ -69,6 +69,15 @@
     },
     "description": {
       "type": "string"
+    },
+    "department": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
     }
   }
 }

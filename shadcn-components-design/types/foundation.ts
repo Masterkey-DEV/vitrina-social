@@ -11,6 +11,8 @@ export interface Foundation {
   description?: string | null;
   location?: string | null;
   memberCount?: number;
+  department?: string | null;
+  city?: string | null;
   // ── Contacto y redes ──
   whatsapp?: string | null;
   facebook?: string | null;

@@ -2,9 +2,10 @@
 "use client";
 
 import { UseFormReturn } from "react-hook-form";
-import { Upload, MapPin } from "lucide-react";
+import { Upload } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { FieldWrapper } from "@/components/register/form-steps";
+import { ColombiaSelector } from "./ColombiaSelector";
 import type { FormValues } from "@/schemas/foundation";
 
 interface Props {
@@ -38,7 +39,7 @@ export function Step2Profile({ form, logoFile, onLogoChange }: Props) {
           />
         </FieldWrapper>
 
-        {/* Logo — completamente opcional, sin validación de zod */}
+        {/* Logo — completamente opcional */}
         <div className="space-y-2">
           <Label className="text-sm font-medium">
             Logo <span className="text-muted-foreground font-normal text-xs">(opcional)</span>
@@ -58,16 +59,10 @@ export function Step2Profile({ form, logoFile, onLogoChange }: Props) {
         </div>
       </div>
 
-      {/* Ubicación — opcional, aparece en el perfil junto a las siglas */}
-      <FieldWrapper label="Ubicación (opcional)" icon={MapPin}>
-        <input
-          {...form.register("location")}
-          placeholder="Ciudad, País"
-          className="flex h-12 w-full rounded-xl border border-input bg-slate-50/50 px-4 py-2 text-sm transition-all focus:bg-white focus:ring-2 focus:ring-primary/10 outline-none"
-        />
-      </FieldWrapper>
+      {/* Selector encadenado departamento → ciudad */}
+      <ColombiaSelector form={form} />
 
-      {/* Misión — opcional, se muestra como cita destacada en el perfil público */}
+      {/* Misión — opcional */}
       <FieldWrapper label="Misión u objetivo (opcional)">
         <input
           {...form.register("objective")}
@@ -76,7 +71,7 @@ export function Step2Profile({ form, logoFile, onLogoChange }: Props) {
         />
       </FieldWrapper>
 
-      {/* Descripción — opcional, texto libre visible en la cabecera del perfil */}
+      {/* Descripción — opcional */}
       <FieldWrapper label="Descripción (opcional)">
         <textarea
           {...form.register("description")}
