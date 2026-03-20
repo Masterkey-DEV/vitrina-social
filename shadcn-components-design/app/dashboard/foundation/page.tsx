@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Loader2, LogOut, Eye, Lightbulb, Package, Plus } from "lucide-react";
+import { Loader2, LogOut, Eye, Lightbulb, Package, Plus, X } from "lucide-react";
 
 import { API_URL } from "@/const/api";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
+import { cn } from "@/lib/utils";
 
 import { StatsGrid } from "@/components/dashboard/foundation/Statsgrid";
 import { TabBar } from "@/components/dashboard/foundation/Tabbar";
@@ -32,11 +33,14 @@ export default function FoundationDashboard() {
   const [tab, setTab] = useState<Tab>("initiatives");
   const [dataLoading, setDataLoading] = useState(true);
 
+  // ── Filtros de categoría ──────────────────────────────────────────────────
+  const [initiativeCategoryFilter, setInitiativeCategoryFilter] = useState<string | null>(null);
+  const [productCategoryFilter, setProductCategoryFilter] = useState<string | null>(null);
+
   const initiatives = useInitiatives(jwt);
   const products = useProducts(jwt);
   const { categories, fetch: fetchCategories } = useCategories(jwt);
 
-  // Refs para evitar dependencias cambiantes en initDashboard
   const initiativesFetchRef = useRef(initiatives.fetch);
   const productsFetchRef = useRef(products.fetch);
   const fetchCategoriesRef = useRef(fetchCategories);
@@ -45,19 +49,15 @@ export default function FoundationDashboard() {
   useEffect(() => { productsFetchRef.current = products.fetch; }, [products.fetch]);
   useEffect(() => { fetchCategoriesRef.current = fetchCategories; }, [fetchCategories]);
 
-  // ✅ Filtra la fundación por usuario (campo "usuario" en foundation)
   const fetchFoundation = useCallback(async () => {
     if (!user || !jwt) return null;
     try {
-      // ✅ Strapi v5: filtrar por relación "usuario" no funciona directamente.
-      // En cambio, populamos la relación inversa "foundation" desde el usuario autenticado.
       const res = await fetch(
         `${API_URL}/api/users/me?populate[foundation][fields][0]=id&populate[foundation][fields][1]=documentId&populate[foundation][fields][2]=name&populate[foundation][fields][3]=siglas`,
         { headers: { Authorization: `Bearer ${jwt}` } },
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
-      // json.foundation es el objeto directo (no array) porque es oneToOne
       return json.foundation ?? null;
     } catch (err) {
       console.error("Error loading foundation:", err);
@@ -70,19 +70,14 @@ export default function FoundationDashboard() {
     try {
       setDataLoading(true);
       await fetchCategoriesRef.current();
-
       const found = await fetchFoundation();
       if (!found) {
         toast({ variant: "destructive", title: "Sin fundación", description: "Tu usuario no tiene una fundación asociada." });
         return;
       }
-
       setFoundation(found);
-
       await Promise.all([
-        // ✅ Iniciativas: filtra por foundation.documentId
         initiativesFetchRef.current(found.documentId),
-        // ✅ Productos: filtra por users_permissions_user (userId numérico)
         productsFetchRef.current(user!.id),
       ]);
     } catch (err) {
@@ -105,6 +100,38 @@ export default function FoundationDashboard() {
     toast({ title: "Sesión cerrada" });
     router.push("/");
   }, [logout, toast, router]);
+
+  // ── Listas filtradas ──────────────────────────────────────────────────────
+  const filteredInitiatives = useMemo(() => {
+    if (!initiativeCategoryFilter) return initiatives.initiatives;
+    return initiatives.initiatives.filter((i) =>
+      i.initiatives_categories?.some((c) => c.name === initiativeCategoryFilter)
+    );
+  }, [initiatives.initiatives, initiativeCategoryFilter]);
+
+  const filteredProducts = useMemo(() => {
+    if (!productCategoryFilter) return products.products;
+    return products.products.filter((p) =>
+      p.product_categories?.some((c) => c.name === productCategoryFilter)
+    );
+  }, [products.products, productCategoryFilter]);
+
+  // ── Categorías únicas presentes en los datos actuales ─────────────────────
+  const initiativeCategories = useMemo(() => {
+    const seen = new Map<string, string>();
+    initiatives.initiatives.forEach((i) =>
+      i.initiatives_categories?.forEach((c) => seen.set(c.name, c.name))
+    );
+    return Array.from(seen.values());
+  }, [initiatives.initiatives]);
+
+  const productCategories = useMemo(() => {
+    const seen = new Map<string, string>();
+    products.products.forEach((p) =>
+      p.product_categories?.forEach((c) => seen.set(c.name, c.name))
+    );
+    return Array.from(seen.values());
+  }, [products.products]);
 
   if (authLoading || dataLoading) {
     return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
@@ -149,17 +176,58 @@ export default function FoundationDashboard() {
                 <Plus className="h-4 w-4" />Nueva iniciativa
               </Button>
             </div>
-            {initiatives.initiatives.length === 0 ? (
-              <EmptyState icon={Lightbulb} title="Sin iniciativas" description="Crea tu primera iniciativa." actionLabel="Crear iniciativa" onAction={initiatives.openCreate} />
+
+            {/* Filtro de categorías */}
+            {initiativeCategories.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setInitiativeCategoryFilter(null)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-full text-xs font-semibold border transition-all",
+                    !initiativeCategoryFilter
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "border-border text-muted-foreground hover:border-primary/40"
+                  )}
+                >
+                  Todas
+                </button>
+                {initiativeCategories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setInitiativeCategoryFilter(
+                      initiativeCategoryFilter === cat ? null : cat
+                    )}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all",
+                      initiativeCategoryFilter === cat
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "border-border text-muted-foreground hover:border-primary/40"
+                    )}
+                  >
+                    {cat}
+                    {initiativeCategoryFilter === cat && <X className="h-3 w-3" />}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {filteredInitiatives.length === 0 ? (
+              initiativeCategoryFilter ? (
+                <div className="text-center py-10 text-sm text-muted-foreground">
+                  No hay iniciativas en la categoría <span className="font-semibold">"{initiativeCategoryFilter}"</span>.{" "}
+                  <button onClick={() => setInitiativeCategoryFilter(null)} className="text-primary hover:underline">Ver todas</button>
+                </div>
+              ) : (
+                <EmptyState icon={Lightbulb} title="Sin iniciativas" description="Crea tu primera iniciativa." actionLabel="Crear iniciativa" onAction={initiatives.openCreate} />
+              )
             ) : (
               <div className="grid gap-3">
-                {initiatives.initiatives.map((init) => (
+                {filteredInitiatives.map((init) => (
                   <InitiativeCard
                     key={init.id}
                     initiative={init}
                     deleting={initiatives.deleting === init.documentId}
                     onEdit={() => initiatives.openEdit(init)}
-                    // ✅ remove necesita foundDocId para refetch
                     onDelete={() => foundation && initiatives.remove(init.documentId, foundation.documentId)}
                   />
                 ))}
@@ -177,17 +245,58 @@ export default function FoundationDashboard() {
                 <Plus className="h-4 w-4" />Nuevo producto
               </Button>
             </div>
-            {products.products.length === 0 ? (
-              <EmptyState icon={Package} title="Sin productos" description="Agrega productos vinculados a tu cuenta." actionLabel="Crear producto" onAction={products.openCreate} />
+
+            {/* Filtro de categorías */}
+            {productCategories.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setProductCategoryFilter(null)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-full text-xs font-semibold border transition-all",
+                    !productCategoryFilter
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "border-border text-muted-foreground hover:border-primary/40"
+                  )}
+                >
+                  Todos
+                </button>
+                {productCategories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setProductCategoryFilter(
+                      productCategoryFilter === cat ? null : cat
+                    )}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all",
+                      productCategoryFilter === cat
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "border-border text-muted-foreground hover:border-primary/40"
+                    )}
+                  >
+                    {cat}
+                    {productCategoryFilter === cat && <X className="h-3 w-3" />}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {filteredProducts.length === 0 ? (
+              productCategoryFilter ? (
+                <div className="text-center py-10 text-sm text-muted-foreground">
+                  No hay productos en la categoría <span className="font-semibold">"{productCategoryFilter}"</span>.{" "}
+                  <button onClick={() => setProductCategoryFilter(null)} className="text-primary hover:underline">Ver todos</button>
+                </div>
+              ) : (
+                <EmptyState icon={Package} title="Sin productos" description="Agrega productos vinculados a tu cuenta." actionLabel="Crear producto" onAction={products.openCreate} />
+              )
             ) : (
               <div className="grid gap-3">
-                {products.products.map((prod) => (
+                {filteredProducts.map((prod) => (
                   <ProductCard
                     key={prod.id}
                     product={prod}
                     deleting={products.deleting === prod.documentId}
                     onEdit={() => products.openEdit(prod)}
-                    // ✅ remove necesita userId para refetch
                     onDelete={() => products.remove(prod.documentId, user.id)}
                   />
                 ))}
@@ -202,13 +311,12 @@ export default function FoundationDashboard() {
         <InitiativeModal
           mode={initiatives.modal}
           form={initiatives.form}
-          categories={categories}
+          jwt={jwt}
           image={initiatives.image}
           saving={initiatives.saving}
           editTarget={initiatives.editTarget}
           onFormChange={initiatives.setForm}
           onImageChange={initiatives.setImage}
-          // ✅ save necesita foundDocId
           onSave={() => foundation && initiatives.save(foundation.documentId)}
           onClose={initiatives.close}
         />
@@ -224,7 +332,6 @@ export default function FoundationDashboard() {
           jwt={jwt}
           onFormChange={products.setForm}
           onImageChange={products.setImage}
-          // ✅ save necesita userId (products usa users_permissions_user)
           onSave={() => products.save(user.id)}
           onClose={products.close}
         />

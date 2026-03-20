@@ -24,10 +24,10 @@ export interface Initiative {
     siglas: string | null;
   };
   initiatives_categories?: Category[];
-  // ✅ Campo real en Strapi: "users" (Relation manyToMany with User)
   users?: {
     id: number;
     documentId: string;
     username: string;
+    email: string; // ← NUEVO
   }[];
 }

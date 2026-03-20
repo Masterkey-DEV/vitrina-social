@@ -57,7 +57,9 @@ export function useInitiatives(jwt: string | null) {
         `&populate[initiatives_categories][fields][2]=name` +
         `&populate[images][fields][0]=url` +
         `&populate[images][fields][1]=name` +
-        `&populate[users][fields][0]=id`;
+        `&populate[users][fields][0]=id` +
+        `&populate[users][fields][1]=username` +
+        `&populate[users][fields][2]=email`;
 
       console.log("[FETCH INITIATIVES URL]", url);
       const res = await fetch(url, { headers: { Authorization: `Bearer ${jwt}` } });

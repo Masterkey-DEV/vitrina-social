@@ -51,6 +51,7 @@ export default function UserRegisterPage() {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -59,22 +60,44 @@ export default function UserRegisterPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!selectedRole) {
-      toast({
-        variant: "destructive",
-        title: "Selecciona un rol para continuar",
-      });
+      toast({ variant: "destructive", title: "Selecciona un rol para continuar" });
       return;
     }
+
     setLoading(true);
+
     try {
       const regRes = await fetch(`${API_URL}/api/auth/local/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
       });
+
       const regData = await regRes.json();
-      if (!regRes.ok)
-        throw new Error(regData.error?.message || "Error al registrar");
+
+      if (!regRes.ok) {
+        const isDuplicate =
+          regRes.status === 500 ||
+          String(regData?.error?.message ?? "").toLowerCase().includes("already taken");
+
+        if (isDuplicate) {
+          setError("email", { type: "manual", message: "Usuario o correo ya están en uso" });
+          setError("username", { type: "manual", message: "Usuario o correo ya están en uso" });
+          toast({
+            variant: "destructive",
+            title: "Cuenta ya existente",
+            description: "El correo o usuario ya están en uso.",
+          });
+          return;
+        }
+
+        toast({
+          variant: "destructive",
+          title: "Error al registrar",
+          description: regData?.error?.message ?? "Error desconocido",
+        });
+        return;
+      }
 
       const jwt = regData.jwt;
 
@@ -86,25 +109,29 @@ export default function UserRegisterPage() {
         },
         body: JSON.stringify({ role: selectedRole }),
       });
+
       const roleData = await roleRes.json();
-      if (!roleRes.ok)
-        throw new Error(roleData.error?.message || "Error al asignar rol");
+
+      if (!roleRes.ok) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: roleData?.error?.message ?? "Error al asignar rol",
+        });
+        return;
+      }
 
       localStorage.setItem("jwt", jwt);
       localStorage.setItem("user", JSON.stringify(regData.user));
 
-      toast({
-        title: "¡Bienvenido!",
-        description: "Tu cuenta fue creada correctamente.",
-      });
-      router.push(
-        selectedRole === "entrepreneur" ? "/products" : "/initiatives",
-      );
-    } catch (error: any) {
+      toast({ title: "¡Bienvenido!", description: "Tu cuenta fue creada correctamente." });
+      router.push(selectedRole === "entrepreneur" ? "/products" : "/initiatives");
+
+    } catch {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: error.message,
+        title: "Error inesperado",
+        description: "Verifica la conexión con el servidor",
       });
     } finally {
       setLoading(false);
@@ -114,22 +141,17 @@ export default function UserRegisterPage() {
   return (
     <div className="min-h-screen bg-muted/30 flex items-center justify-center p-6">
       <div className="w-full max-w-lg space-y-8">
-        {/* Header */}
+
         <div className="text-center space-y-1">
           <Link href="/" className="inline-flex flex-col leading-[0.85]">
-            <span className="text-2xl font-black tracking-tighter italic">
-              REINTEGRATION
-            </span>
-            <span className="text-2xl font-black tracking-tighter text-primary italic">
-              PORTAL
-            </span>
+            <span className="text-2xl font-black tracking-tighter italic">REINTEGRATION</span>
+            <span className="text-2xl font-black tracking-tighter text-primary italic">PORTAL</span>
           </Link>
-          <p className="text-muted-foreground text-sm pt-3">
-            Elige cómo quieres participar
-          </p>
+          <p className="text-muted-foreground text-sm pt-3">Elige cómo quieres participar</p>
         </div>
 
         <div className="bg-card border border-border rounded-3xl p-8 shadow-sm space-y-6">
+
           {/* Role selector */}
           <div className="grid grid-cols-2 gap-3">
             {ROLES.map((role) => {
@@ -152,37 +174,15 @@ export default function UserRegisterPage() {
                       <Check className="h-3 w-3 text-white" />
                     </div>
                   )}
-                  <div
-                    className={cn(
-                      "h-10 w-10 rounded-xl flex items-center justify-center mb-3",
-                      isSelected ? "bg-primary/10" : "bg-muted",
-                    )}
-                  >
-                    <Icon
-                      className={cn(
-                        "h-5 w-5",
-                        isSelected ? "text-primary" : "text-muted-foreground",
-                      )}
-                    />
+                  <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center mb-3", isSelected ? "bg-primary/10" : "bg-muted")}>
+                    <Icon className={cn("h-5 w-5", isSelected ? "text-primary" : "text-muted-foreground")} />
                   </div>
                   <h3 className="font-black text-base mb-1">{role.label}</h3>
-                  <p className="text-muted-foreground text-xs leading-relaxed mb-3">
-                    {role.description}
-                  </p>
+                  <p className="text-muted-foreground text-xs leading-relaxed mb-3">{role.description}</p>
                   <ul className="space-y-1">
                     {role.perks.map((perk) => (
-                      <li
-                        key={perk}
-                        className="text-[10px] text-muted-foreground flex items-center gap-1.5"
-                      >
-                        <div
-                          className={cn(
-                            "h-1 w-1 rounded-full shrink-0",
-                            isSelected
-                              ? "bg-primary"
-                              : "bg-muted-foreground/40",
-                          )}
-                        />
+                      <li key={perk} className="text-[10px] text-muted-foreground flex items-center gap-1.5">
+                        <div className={cn("h-1 w-1 rounded-full shrink-0", isSelected ? "bg-primary" : "bg-muted-foreground/40")} />
                         {perk}
                       </li>
                     ))}
@@ -200,13 +200,12 @@ export default function UserRegisterPage() {
                 <input
                   {...register("username")}
                   placeholder="juanperez"
-                  className="w-full border border-input rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring transition-all placeholder:text-muted-foreground"
+                  className={cn(
+                    "w-full border rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring transition-all placeholder:text-muted-foreground",
+                    errors.username ? "border-destructive focus:ring-destructive/30" : "border-input"
+                  )}
                 />
-                {errors.username && (
-                  <p className="text-destructive text-xs">
-                    {errors.username.message}
-                  </p>
-                )}
+                {errors.username && <p className="text-destructive text-xs">{errors.username.message}</p>}
               </div>
               <div className="space-y-1.5">
                 <label className="text-sm font-semibold">Email</label>
@@ -214,13 +213,12 @@ export default function UserRegisterPage() {
                   {...register("email")}
                   type="email"
                   placeholder="tu@email.com"
-                  className="w-full border border-input rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring transition-all placeholder:text-muted-foreground"
+                  className={cn(
+                    "w-full border rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring transition-all placeholder:text-muted-foreground",
+                    errors.email ? "border-destructive focus:ring-destructive/30" : "border-input"
+                  )}
                 />
-                {errors.email && (
-                  <p className="text-destructive text-xs">
-                    {errors.email.message}
-                  </p>
-                )}
+                {errors.email && <p className="text-destructive text-xs">{errors.email.message}</p>}
               </div>
             </div>
 
@@ -231,25 +229,20 @@ export default function UserRegisterPage() {
                   {...register("password")}
                   type={showPassword ? "text" : "password"}
                   placeholder="Mínimo 8 caracteres"
-                  className="w-full border border-input rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring transition-all pr-10 placeholder:text-muted-foreground"
+                  className={cn(
+                    "w-full border rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring transition-all pr-10 placeholder:text-muted-foreground",
+                    errors.password ? "border-destructive focus:ring-destructive/30" : "border-input"
+                  )}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
-              {errors.password && (
-                <p className="text-destructive text-xs">
-                  {errors.password.message}
-                </p>
-              )}
+              {errors.password && <p className="text-destructive text-xs">{errors.password.message}</p>}
             </div>
 
             <Button
@@ -261,8 +254,7 @@ export default function UserRegisterPage() {
                 "Creando cuenta..."
               ) : selectedRole ? (
                 <>
-                  Registrarme como{" "}
-                  {selectedRole === "member" ? "Miembro" : "Emprendedor"}
+                  Registrarme como {selectedRole === "member" ? "Miembro" : "Emprendedor"}
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </>
               ) : (
@@ -273,13 +265,11 @@ export default function UserRegisterPage() {
 
           <p className="text-center text-muted-foreground text-xs">
             ¿Ya tienes cuenta?{" "}
-            <Link
-              href="/login"
-              className="text-primary font-semibold hover:underline"
-            >
+            <Link href="/login" className="text-primary font-semibold hover:underline">
               Inicia sesión
             </Link>
           </p>
+
         </div>
       </div>
     </div>

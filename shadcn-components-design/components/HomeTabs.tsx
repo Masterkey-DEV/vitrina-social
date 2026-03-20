@@ -12,7 +12,7 @@ import { InitiativesSection } from "./initiatives-section"; // ✅ lowercase, no
 import { ProductsSection } from "./Product-section";
 
 export function HomeTabs() {
-  const [activeTab, setActiveTab] = useState<TabKey>("iniciativas");
+  const [activeTab, setActiveTab] = useState<TabKey>("emprendimientos");
 
   const tabContent: Record<TabKey, ReactNode> = {
     iniciativas: (

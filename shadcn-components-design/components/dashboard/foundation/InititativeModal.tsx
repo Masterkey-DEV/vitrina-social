@@ -1,19 +1,28 @@
-import { Loader2 } from "lucide-react";
+"use client";
+
+import { useEffect, useState } from "react";
+import { Loader2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Field } from "./Field";
 import { ImageUpload } from "./ImageUpload";
 import { ModalShell } from "./ModalShell";
 import { inputCls } from "@/utils/dashboard";
+import { API_URL } from "@/const/api";
 import type { InitForm } from "@/types/dashboard";
-import type { Category, Initiative } from "@/types/initiative";
+import type { Initiative } from "@/types/initiative";
+
+interface Category {
+  id: number;
+  name: string;
+}
 
 interface InitiativeModalProps {
   mode: "create" | "edit";
   form: InitForm;
-  categories: Category[];
   image: File | null;
   saving: boolean;
+  jwt: string | null;
   editTarget: Initiative | null;
   onFormChange: (form: InitForm) => void;
   onImageChange: (file: File | null) => void;
@@ -24,19 +33,33 @@ interface InitiativeModalProps {
 export function InitiativeModal({
   mode,
   form,
-  categories,
   image,
   saving,
+  jwt,
   onFormChange,
   onImageChange,
   onSave,
   onClose,
 }: InitiativeModalProps) {
   const title = mode === "create" ? "Nueva iniciativa" : "Editar iniciativa";
-  const submitLabel =
-    mode === "create" ? "Crear iniciativa" : "Guardar cambios";
+  const submitLabel = mode === "create" ? "Crear iniciativa" : "Guardar cambios";
 
-  // FIX: guard contra categories undefined por cualquier path
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loadingCats, setLoadingCats] = useState(false);
+
+  useEffect(() => {
+    if (!jwt) return;
+    setLoadingCats(true);
+    fetch(
+      `${API_URL}/api/initiatives-categories?fields[0]=id&fields[1]=name&sort=name:asc`,
+      { headers: { Authorization: `Bearer ${jwt}` } }
+    )
+      .then((r) => r.json())
+      .then((json) => setCategories(json.data ?? []))
+      .catch(console.error)
+      .finally(() => setLoadingCats(false));
+  }, [jwt]);
+
   const currentCategories = form.categories ?? [];
 
   function toggleCategory(id: number) {
@@ -48,6 +71,7 @@ export function InitiativeModal({
 
   return (
     <ModalShell title={title} onClose={onClose}>
+
       <Field label="Título *">
         <input
           value={form.title}
@@ -78,11 +102,23 @@ export function InitiativeModal({
         />
       </Field>
 
-      {categories.length > 0 && (
-        <Field label="Categorías">
-          <div className="flex flex-wrap gap-2">
+      <Field label="Imagen">
+        <ImageUpload file={image} onChange={onImageChange} />
+      </Field>
+
+      <Field label="Categorías">
+        {loadingCats ? (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Cargando categorías...
+          </div>
+        ) : categories.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-2">
+            No hay categorías disponibles.
+          </p>
+        ) : (
+          <div className="flex flex-wrap gap-2 pt-1">
             {categories.map((cat) => {
-              // FIX: usa currentCategories que siempre es un array
               const selected = currentCategories.includes(cat.id);
               return (
                 <button
@@ -90,22 +126,20 @@ export function InitiativeModal({
                   type="button"
                   onClick={() => toggleCategory(cat.id)}
                   className={cn(
-                    "px-3 py-1.5 rounded-full text-xs font-semibold border transition-all",
+                    "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full",
+                    "text-sm font-medium border transition-all",
                     selected
-                      ? "bg-primary text-white border-primary"
-                      : "border-border text-muted-foreground hover:border-primary/40",
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-background text-foreground border-border hover:border-primary/50"
                   )}
                 >
+                  {selected && <Check className="h-3 w-3" />}
                   {cat.name}
                 </button>
               );
             })}
           </div>
-        </Field>
-      )}
-
-      <Field label="Imagen">
-        <ImageUpload file={image} onChange={onImageChange} />
+        )}
       </Field>
 
       <div className="flex gap-3 pt-2 border-t border-border">
@@ -124,6 +158,7 @@ export function InitiativeModal({
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : submitLabel}
         </Button>
       </div>
+
     </ModalShell>
   );
 }

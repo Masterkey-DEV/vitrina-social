@@ -1,5 +1,6 @@
 export default [
   'strapi::logger',
+  "global::handle-duplicate-user",
   'strapi::errors',
   {
     name: 'strapi::security',
