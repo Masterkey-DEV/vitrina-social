@@ -8,8 +8,8 @@ export default function Page() {
   return (
     <div className="min-h-screen bg-background mx-auto">
       <main>
-        <HeroSection /> {/* Hero una sola vez, fuera de los tabs */}
-        <HomeTabs /> {/* Tabs sin tab "inicio" */}
+        <HeroSection /> 
+        <HomeTabs /> 
         <SuccessStories />
         <SupportSection />
       </main>

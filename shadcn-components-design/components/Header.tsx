@@ -45,7 +45,7 @@ const NAV_LINKS = [
     icon: <MessageCircle className="h-4 w-4" />,
   },
   {
-    name: "Fundaciones",
+    name: "Fundaciones aliadas",
     href: "/foundations",
     icon: <Building2 className="h-4 w-4" />,
   },

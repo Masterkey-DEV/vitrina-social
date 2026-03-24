@@ -83,6 +83,9 @@
       "relation": "oneToMany",
       "target": "api::product.product",
       "mappedBy": "usuario"
+    },
+    "telefono": {
+      "type": "string"
     }
   }
 }
