@@ -223,7 +223,6 @@ export default function UserRegisterPage() {
   };
 
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
-
   const onSubmit = async (values: CompleteUserFormValues) => {
     if (!selectedRole) {
       toast({
@@ -235,44 +234,20 @@ export default function UserRegisterPage() {
 
     setLoading(true);
     try {
-      // 1. Registrar usuario
-      const { jwt, user } = await registerUser({
-        username: values.username,
-        email: values.email,
-        password: values.password,
-      });
+      // 1. Registrar usuario con TODOS los datos (excepto confirmPassword)
+      const { jwt, user } = await registerUser(values); // <--- pasamos 'values' completo
 
       // 2. Asignar rol
       await assignRole(jwt, selectedRole);
 
-      // 3. Actualizar perfil con datos opcionales
-      const updatePayload: UserUpdatePayload = {
-        ...(values.fullName?.trim() && { fullName: values.fullName.trim() }),
-        ...(values.phone?.trim() && { phone: values.phone.trim() }),
-        ...(values.whatsapp?.trim() && { whatsapp: values.whatsapp.trim() }),
-        ...(values.address?.trim() && { address: values.address.trim() }),
-        ...(values.city?.trim() && { city: values.city.trim() }),
-        ...(values.department?.trim() && {
-          department: values.department.trim(),
-        }),
-        ...(values.bio?.trim() && { bio: values.bio.trim() }),
-        ...(values.receiveNewsletter !== undefined && {
-          receiveNewsletter: values.receiveNewsletter,
-        }),
-        ...(values.receiveUpdates !== undefined && {
-          receiveUpdates: values.receiveUpdates,
-        }),
-      };
-      await updateUserProfile(jwt, updatePayload);
-
-      // 4. Login automático
+      // 3. Login automático (ya no necesitamos updateUserProfile)
       await login(jwt);
       toast({
         title: "¡Bienvenido!",
         description: "Tu cuenta fue creada correctamente.",
       });
 
-      // Redirigir según rol
+      // 4. Redirigir según rol
       router.push(
         selectedRole === "entrepreneur"
           ? "/dashboard/entrepreneur"
@@ -287,7 +262,6 @@ export default function UserRegisterPage() {
         title: "Error inesperado",
         description: message,
       });
-      // Si el error es por duplicado, podríamos hacer un manejo más específico
       if (message.toLowerCase().includes("already taken")) {
         form.setError("email", {
           type: "manual",
@@ -303,7 +277,6 @@ export default function UserRegisterPage() {
       setLoading(false);
     }
   };
-
   const roleLabels = { member: "Miembro", entrepreneur: "Emprendedor" };
 
   return (
