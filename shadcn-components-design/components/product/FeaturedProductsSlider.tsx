@@ -1,11 +1,10 @@
-// @/components/FeaturedProductsSlider.tsx
 "use client";
 
 import { useEffect, useState, useRef } from "react";
 import { getFeaturedProducts } from "@/actions/product.actions";
 import { Product } from "@/types/product";
 import { API_URL } from "@/const/api";
-import { Loader2, ShoppingBag, ChevronLeft, ChevronRight } from "lucide-react";
+import { Loader2, ShoppingBag, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
@@ -30,11 +29,11 @@ function ProductSlide({ product }: { product: Product }) {
     : "/holder_productos.jpeg";
 
   return (
-    <Link href={`/products/${product.slug || product.id}`} className="group">
-      <Card className="h-full overflow-hidden hover:shadow-xl transition-all duration-300 hover:border-primary/20">
-        <div className="relative aspect-[4/3] overflow-hidden bg-muted/20">
+    <Link href={`/products/${product.slug || product.id}`} className="group block">
+      <Card className="h-full overflow-hidden border-border hover:shadow-xl hover:border-primary/20 transition-all duration-300 bg-card">
+        <div className="relative aspect-square overflow-hidden bg-muted">
           {product.featured && (
-            <Badge className="absolute top-3 left-3 z-10 bg-primary text-white">
+            <Badge className="absolute top-3 left-3 z-10 bg-accent text-foreground font-medium">
               Destacado
             </Badge>
           )}
@@ -42,23 +41,29 @@ function ProductSlide({ product }: { product: Product }) {
             src={imageUrl}
             alt={product.name}
             fill
-            className="object-cover group-hover:scale-110 transition-transform duration-500"
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
           />
         </div>
-        <CardContent className="p-5 space-y-2">
-          <h3 className="font-bold text-xl line-clamp-1">{product.name}</h3>
-          {product.product_categories?.[0]?.name && (
-            <Badge variant="outline" className="text-xs">
-              {product.product_categories[0].name}
-            </Badge>
+        <CardContent className="p-5 space-y-3">
+          <div>
+            <h3 className="font-semibold text-lg text-foreground group-hover:text-primary transition-colors line-clamp-1">
+              {product.name}
+            </h3>
+            {product.product_categories?.[0]?.name && (
+              <Badge variant="outline" className="text-xs mt-2 font-normal">
+                {product.product_categories[0].name}
+              </Badge>
+            )}
+          </div>
+          {product.shortDescription && (
+            <p className="text-sm text-muted-foreground line-clamp-2">
+              {product.shortDescription}
+            </p>
           )}
-          <p className="text-sm text-muted-foreground line-clamp-2 mt-2">
-            {product.shortDescription}
-          </p>
         </CardContent>
         <CardFooter className="p-5 pt-0 flex items-center justify-between">
           <div>
-            <span className="text-2xl font-bold text-primary">
+            <span className="text-xl font-bold text-primary">
               {product.price != null
                 ? `$${Number(product.price).toLocaleString("es-CO")}`
                 : "Consultar"}
@@ -67,7 +72,7 @@ function ProductSlide({ product }: { product: Product }) {
               <p className="text-xs text-muted-foreground">COP</p>
             )}
           </div>
-          <Button size="sm" variant="outline" className="rounded-full">
+          <Button size="sm" variant="outline" className="rounded-full text-sm">
             Ver producto
           </Button>
         </CardFooter>
@@ -79,7 +84,7 @@ function ProductSlide({ product }: { product: Product }) {
 export function FeaturedProductsSlider({
   limit = 10,
   title = "Productos Destacados",
-  subtitle = "Descubre lo mejor de nuestros emprendedores",
+  subtitle = "Descubre lo mejor de nuestros artesanos",
   autoplay = true,
   autoplayDelay = 5000,
 }: FeaturedProductsSliderProps) {
@@ -91,12 +96,6 @@ export function FeaturedProductsSlider({
   const sliderRef = useRef<HTMLDivElement>(null);
   const autoplayRef = useRef<NodeJS.Timeout>(null);
 
-  const itemsPerView = {
-    mobile: 1,
-    tablet: 2,
-    desktop: 3,
-  };
-
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
       setLoading(true);
@@ -107,7 +106,7 @@ export function FeaturedProductsSlider({
         } else {
           setError(result.error || "Error al cargar productos");
         }
-      } catch (err) {
+      } catch {
         setError("Error al cargar productos");
       } finally {
         setLoading(false);
@@ -117,24 +116,24 @@ export function FeaturedProductsSlider({
     fetchFeaturedProducts();
   }, [limit]);
 
+  const totalSlides = Math.ceil(products.length / 3);
+
   const nextSlide = () => {
-    if (isAnimating) return;
+    if (isAnimating || totalSlides <= 1) return;
     setIsAnimating(true);
-    setCurrentIndex((prev) => (prev + 1) % Math.ceil(products.length / 3));
+    setCurrentIndex((prev) => (prev + 1) % totalSlides);
     setTimeout(() => setIsAnimating(false), 500);
   };
 
   const prevSlide = () => {
-    if (isAnimating) return;
+    if (isAnimating || totalSlides <= 1) return;
     setIsAnimating(true);
-    setCurrentIndex((prev) =>
-      prev === 0 ? Math.ceil(products.length / 3) - 1 : prev - 1,
-    );
+    setCurrentIndex((prev) => (prev === 0 ? totalSlides - 1 : prev - 1));
     setTimeout(() => setIsAnimating(false), 500);
   };
 
   useEffect(() => {
-    if (autoplay && products.length > 0) {
+    if (autoplay && products.length > 3) {
       autoplayRef.current = setInterval(nextSlide, autoplayDelay);
       return () => {
         if (autoplayRef.current) clearInterval(autoplayRef.current);
@@ -142,23 +141,18 @@ export function FeaturedProductsSlider({
     }
   }, [autoplay, autoplayDelay, products.length]);
 
-  const getVisibleProducts = () => {
-    const start = currentIndex * 3;
-    return products.slice(start, start + 3);
-  };
-
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
-        <p className="text-muted-foreground mt-4">Cargando productos...</p>
+        <p className="text-muted-foreground mt-4 text-sm">Cargando productos...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center py-20">
+      <div className="text-center py-20 bg-card rounded-2xl border border-border">
         <p className="text-destructive">{error}</p>
       </div>
     );
@@ -166,65 +160,76 @@ export function FeaturedProductsSlider({
 
   if (products.length === 0) {
     return (
-      <div className="text-center py-20">
+      <div className="text-center py-20 bg-card rounded-2xl border border-border">
         <ShoppingBag className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
-        <h3 className="text-xl font-semibold">No hay productos destacados</h3>
-        <p className="text-muted-foreground mt-1">
-          Pronto tendremos productos disponibles.
+        <h3 className="text-xl font-semibold text-foreground">Proximamente</h3>
+        <p className="text-muted-foreground mt-2">
+          Pronto tendras acceso a productos artesanales unicos.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      <div className="text-center space-y-2">
-        <h2 className="text-3xl md:text-4xl font-black tracking-tight">
+    <div className="space-y-10">
+      {/* Header */}
+      <div className="text-center space-y-3">
+        <h2 className="font-serif text-3xl md:text-4xl text-foreground">
           {title}
         </h2>
         <p className="text-muted-foreground text-lg">{subtitle}</p>
       </div>
 
-      <div className="relative px-12">
-        <Button
-          variant="outline"
-          size="icon"
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background"
-          onClick={prevSlide}
-          disabled={isAnimating}
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </Button>
+      {/* Slider */}
+      <div className="relative">
+        {totalSlides > 1 && (
+          <>
+            <Button
+              variant="outline"
+              size="icon"
+              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 rounded-full bg-card shadow-lg hover:bg-muted hidden md:flex"
+              onClick={prevSlide}
+              disabled={isAnimating}
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+
+            <Button
+              variant="outline"
+              size="icon"
+              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 rounded-full bg-card shadow-lg hover:bg-muted hidden md:flex"
+              onClick={nextSlide}
+              disabled={isAnimating}
+            >
+              <ChevronRight className="h-5 w-5" />
+            </Button>
+          </>
+        )}
 
         <div ref={sliderRef} className="overflow-hidden">
           <div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 transition-transform duration-500 ease-in-out"
+            className="flex transition-transform duration-500 ease-out"
             style={{
               transform: `translateX(-${currentIndex * 100}%)`,
             }}
           >
-            {products.map((product) => (
-              <div key={product.id} className="px-2">
-                <ProductSlide product={product} />
+            {Array.from({ length: totalSlides }).map((_, slideIndex) => (
+              <div key={slideIndex} className="w-full flex-shrink-0">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-1">
+                  {products.slice(slideIndex * 3, slideIndex * 3 + 3).map((product) => (
+                    <ProductSlide key={product.id} product={product} />
+                  ))}
+                </div>
               </div>
             ))}
           </div>
         </div>
-
-        <Button
-          variant="outline"
-          size="icon"
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background"
-          onClick={nextSlide}
-          disabled={isAnimating}
-        >
-          <ChevronRight className="h-5 w-5" />
-        </Button>
       </div>
 
-      <div className="flex justify-center gap-2">
-        {Array.from({ length: Math.ceil(products.length / 3) }).map(
-          (_, idx) => (
+      {/* Indicadores */}
+      {totalSlides > 1 && (
+        <div className="flex justify-center gap-2">
+          {Array.from({ length: totalSlides }).map((_, idx) => (
             <button
               key={idx}
               onClick={() => setCurrentIndex(idx)}
@@ -232,16 +237,17 @@ export function FeaturedProductsSlider({
                 "h-2 rounded-full transition-all duration-300",
                 currentIndex === idx
                   ? "w-8 bg-primary"
-                  : "w-2 bg-muted-foreground/30 hover:bg-muted-foreground/50",
+                  : "w-2 bg-muted-foreground/30 hover:bg-muted-foreground/50"
               )}
             />
-          ),
-        )}
-      </div>
+          ))}
+        </div>
+      )}
 
-      <div className="text-center pt-4">
+      {/* CTA */}
+      <div className="text-center">
         <Link href="/products">
-          <Button variant="outline" className="rounded-full gap-2">
+          <Button variant="outline" className="rounded-full gap-2 px-6">
             Ver todos los productos
             <ChevronRight className="h-4 w-4" />
           </Button>

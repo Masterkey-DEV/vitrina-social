@@ -1,16 +1,31 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { DM_Sans, DM_Serif_Display } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/context/AuthContext";
 
-const inter = Inter({ subsets: ["latin"] });
+const dmSans = DM_Sans({ 
+  subsets: ["latin"],
+  variable: "--font-sans",
+  weight: ["400", "500", "600", "700"]
+});
+
+const dmSerif = DM_Serif_Display({ 
+  subsets: ["latin"],
+  variable: "--font-serif",
+  weight: ["400"]
+});
 
 export const metadata: Metadata = {
-  title: "Vitrina Social",
-  description: "Forjando un futuro de reconciliación",
+  title: "Vitrina Social | Artesanias con Alma Colombiana",
+  description: "Marketplace artesanal que conecta a emprendedores victimas del conflicto con compradores conscientes. Cada compra transforma vidas y construye paz.",
+  keywords: ["artesanias colombianas", "impacto social", "emprendimiento", "reconciliacion", "comercio justo"],
+};
+
+export const viewport: Viewport = {
+  themeColor: "#3d6b4a",
 };
 
 export default function RootLayout({
@@ -21,7 +36,7 @@ export default function RootLayout({
   return (
     <html lang="es" className="scroll-smooth">
       <body
-        className={`${inter.className} antialiased selection:bg-primary/30`}
+        className={`${dmSans.variable} ${dmSerif.variable} font-sans`}
       >
         <AuthProvider>
           <Header />

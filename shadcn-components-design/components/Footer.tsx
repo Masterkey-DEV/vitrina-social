@@ -1,95 +1,111 @@
-import { Share2, Mail, Globe, Heart, ShoppingBag } from "lucide-react";
+import Link from "next/link";
+import { Mail, Instagram, Facebook, MapPin, Heart } from "lucide-react";
+
+const FOOTER_LINKS = {
+  plataforma: [
+    { label: "Como funciona", href: "/about" },
+    { label: "Productos", href: "/products" },
+    { label: "Fundaciones", href: "/foundations" },
+    { label: "Iniciativas", href: "/initiatives" },
+  ],
+  legal: [
+    { label: "Politica de privacidad", href: "#" },
+    { label: "Terminos de servicio", href: "#" },
+    { label: "Preguntas frecuentes", href: "#" },
+  ],
+};
+
+const SOCIAL_LINKS = [
+  { icon: Instagram, href: "#", label: "Instagram" },
+  { icon: Facebook, href: "#", label: "Facebook" },
+  { icon: Mail, href: "mailto:contacto@vitrinasocial.com", label: "Email" },
+];
 
 export function Footer() {
   return (
-    <footer className="w-full border-t border-border bg-slate-50/50 dark:bg-transparent">
-      <div className="max-w-7xl mx-auto px-4 py-12 md:py-16">
-        {/* Layout principal */}
+    <footer className="w-full border-t border-border bg-card">
+      <div className="max-w-7xl mx-auto px-4 py-16">
+        {/* Grid principal */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
           
-          {/* Columna 1: Branding y Propósito (Narrativa de impacto) */}
-          <div className="lg:col-span-2">
-            <h3 className="text-xl font-bold text-primary mb-3 flex items-center gap-2">
-              <ShoppingBag className="h-5 w-5" />
-              Vitrina Social
-            </h3>
-            <p className="text-muted-foreground text-sm leading-relaxed max-w-sm">
-              El marketplace que conecta el talento de víctimas del conflicto con un mercado consciente. 
-              Transformamos productos en historias de reconciliación y autonomía económica.
+          {/* Columna 1: Branding */}
+          <div className="lg:col-span-2 space-y-4">
+            <Link href="/" className="inline-block">
+              <span className="font-serif text-2xl text-foreground">Vitrina</span>
+              <span className="font-serif text-2xl text-primary">Social</span>
+            </Link>
+            <p className="text-muted-foreground leading-relaxed max-w-sm">
+              Conectamos el talento de comunidades resilientes de Colombia con personas 
+              que valoran lo autentico. Cada compra transforma vidas y construye paz.
             </p>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <MapPin className="h-4 w-4 text-accent" />
+              <span>Colombia</span>
+            </div>
           </div>
 
-          {/* Columna 2: Recursos y Legal */}
+          {/* Columna 2: Plataforma */}
           <div>
-            <h4 className="text-sm font-bold text-foreground uppercase tracking-wider mb-4">
+            <h4 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-4">
               Plataforma
             </h4>
             <nav className="flex flex-col gap-3">
-              <a
-                href="/about"
-                className="text-sm text-muted-foreground hover:text-primary transition-colors"
-              >
-                ¿Cómo funciona?
-              </a>
-              <a
-                href="#"
-                className="text-sm text-muted-foreground hover:text-primary transition-colors"
-              >
-                Vender en Vitrina
-              </a>
-              <a
-                href="#"
-                className="text-sm text-muted-foreground hover:text-primary transition-colors"
-              >
-                Políticas de Privacidad
-              </a>
-              <a
-                href="#"
-                className="text-sm text-muted-foreground hover:text-primary transition-colors"
-              >
-                Términos de Servicio
-              </a>
+              {FOOTER_LINKS.plataforma.map((link) => (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ))}
             </nav>
           </div>
 
-          {/* Columna 3: Contacto y Social */}
+          {/* Columna 3: Legal y Social */}
           <div>
-            <h4 className="text-sm font-bold text-foreground uppercase tracking-wider mb-4">
-              Únete al Cambio
+            <h4 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-4">
+              Legal
             </h4>
-            <div className="flex gap-4">
-              <a
-                href="mailto:contacto@vitrinasocial.com"
-                className="flex items-center justify-center h-11 w-11 rounded-full bg-background border border-border text-muted-foreground hover:text-primary hover:border-primary transition-all shadow-sm"
-                aria-label="Email"
-              >
-                <Mail className="h-5 w-5" />
-              </a>
-              <a
-                href="#"
-                className="flex items-center justify-center h-11 w-11 rounded-full bg-background border border-border text-muted-foreground hover:text-primary hover:border-primary transition-all shadow-sm"
-                aria-label="Compartir"
-              >
-                <Share2 className="h-5 w-5" />
-              </a>
+            <nav className="flex flex-col gap-3 mb-6">
+              {FOOTER_LINKS.legal.map((link) => (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+            
+            <h4 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-4">
+              Siguenos
+            </h4>
+            <div className="flex gap-3">
+              {SOCIAL_LINKS.map((social) => (
+                <a
+                  key={social.label}
+                  href={social.href}
+                  className="flex items-center justify-center h-10 w-10 rounded-full bg-muted text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all"
+                  aria-label={social.label}
+                >
+                  <social.icon className="h-4 w-4" />
+                </a>
+              ))}
             </div>
-            <p className="mt-4 text-xs text-muted-foreground flex items-center gap-1">
-              Hecho con <Heart className="h-3 w-3 text-red-500 fill-red-500" />{" "}
-              desde Colombia.
-            </p>
           </div>
         </div>
 
-        {/* Línea final de Copyright */}
-        <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-xs text-muted-foreground text-center md:text-left">
-            &copy; {180} {new Date().getFullYear()} Vitrina Social.
-            Impulsando la reconstrucción económica.
-          </p>
-          <div className="flex gap-6">
-            <span className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">
-              Sello de Confianza Verificado
-            </span>
+        {/* Separador con patron decorativo */}
+        <div className="mt-12 pt-8 border-t border-border">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-muted-foreground text-center md:text-left">
+              {new Date().getFullYear()} Vitrina Social. Impulsando la reconciliacion economica.
+            </p>
+            <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+              Hecho con <Heart className="h-3.5 w-3.5 text-accent fill-accent" /> en Colombia
+            </p>
           </div>
         </div>
       </div>

@@ -6,7 +6,6 @@ import { useRouter, usePathname } from "next/navigation";
 import {
   Menu,
   Heart,
-  MessageCircle,
   Rocket,
   Building2,
   UserPlus,
@@ -15,6 +14,7 @@ import {
   LayoutDashboard,
   LogOut,
   ChevronDown,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,24 +35,24 @@ import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
   {
-    name: "Emprendimientos",
+    name: "Productos",
     href: "/products",
     icon: <Rocket className="h-4 w-4" />,
   },
   {
     name: "Iniciativas",
     href: "/initiatives",
-    icon: <MessageCircle className="h-4 w-4" />,
+    icon: <Sparkles className="h-4 w-4" />,
   },
   {
-    name: "Fundaciones aliadas",
+    name: "Fundaciones",
     href: "/foundations",
     icon: <Building2 className="h-4 w-4" />,
   },
 ];
 
 const ROLE_LABEL: Record<string, string> = {
-  foundation: "Fundación",
+  foundation: "Fundacion",
   entrepreneur: "Emprendedor",
   member: "Miembro",
   authenticated: "Usuario",
@@ -74,7 +74,7 @@ export function Header() {
   const initial = user?.username?.[0]?.toUpperCase();
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-xl border-b border-border/40">
+    <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-md border-b border-border">
       <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-4">
         {/* IZQUIERDA */}
         <div className="flex items-center gap-4">
@@ -84,9 +84,10 @@ export function Header() {
                 <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[300px]">
-              <SheetTitle className="text-left font-black text-2xl mb-8 italic">
-                VITRINA<span className="text-primary">SOCIAL</span>
+            <SheetContent side="left" className="w-[300px] bg-card">
+              <SheetTitle className="text-left mb-8">
+                <span className="font-serif text-2xl text-foreground">Vitrina</span>
+                <span className="font-serif text-2xl text-primary">Social</span>
               </SheetTitle>
               <nav className="flex flex-col gap-1">
                 {NAV_LINKS.map((link) => (
@@ -94,17 +95,22 @@ export function Header() {
                     key={link.name}
                     href={link.href}
                     onClick={() => setOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 rounded-2xl text-base font-semibold hover:bg-primary/10 transition-all"
+                    className={cn(
+                      "flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all",
+                      pathname === link.href
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    )}
                   >
                     {link.icon}
                     {link.name}
                   </Link>
                 ))}
-                <hr className="my-4" />
+                <hr className="my-4 border-border" />
                 {user ? (
                   <>
                     <div className="px-4 py-2 mb-1">
-                      <p className="font-black">{user.username}</p>
+                      <p className="font-bold text-foreground">{user.username}</p>
                       <p className="text-xs text-muted-foreground">
                         {ROLE_LABEL[role ?? ""] ?? role}
                       </p>
@@ -112,17 +118,17 @@ export function Header() {
                     <Link
                       href="/dashboard"
                       onClick={() => setOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-primary"
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-primary hover:bg-primary/10"
                     >
                       <LayoutDashboard className="h-5 w-5" />
                       Mi panel
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="flex items-center gap-3 px-4 py-3 rounded-2xl font-semibold text-destructive hover:bg-destructive/5 transition-all w-full text-left"
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-destructive hover:bg-destructive/5 transition-all w-full text-left"
                     >
                       <LogOut className="h-5 w-5" />
-                      Cerrar sesión
+                      Cerrar sesion
                     </button>
                   </>
                 ) : (
@@ -130,15 +136,15 @@ export function Header() {
                     <Link
                       href="/foundations/register"
                       onClick={() => setOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-primary"
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-primary hover:bg-primary/10"
                     >
                       <UserPlus className="h-5 w-5" />
-                      Registrar Fundación
+                      Registrar Fundacion
                     </Link>
                     <Link
                       href="/user/register"
                       onClick={() => setOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-primary"
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-primary hover:bg-primary/10"
                     >
                       <User className="h-5 w-5" />
                       Registrar Persona
@@ -146,10 +152,10 @@ export function Header() {
                     <Link
                       href="/login"
                       onClick={() => setOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 rounded-2xl font-semibold"
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-muted-foreground hover:bg-muted"
                     >
                       <LogIn className="h-5 w-5" />
-                      Iniciar Sesión
+                      Iniciar Sesion
                     </Link>
                   </>
                 )}
@@ -157,25 +163,21 @@ export function Header() {
             </SheetContent>
           </Sheet>
 
-          <Link href="/" className="flex flex-col leading-[0.85] shrink-0">
-            <span className="text-lg font-black tracking-tighter italic">
-              VITRINA
-            </span>
-            <span className="text-lg font-black tracking-tighter text-primary/80 italic">
-              SOCIAL
-            </span>
+          <Link href="/" className="flex items-center gap-1 shrink-0">
+            <span className="font-serif text-xl text-foreground">Vitrina</span>
+            <span className="font-serif text-xl text-primary">Social</span>
           </Link>
 
-          <nav className="hidden lg:flex items-center gap-1 ml-4">
+          <nav className="hidden lg:flex items-center gap-1 ml-6">
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.name}
                 href={link.href}
                 className={cn(
-                  "px-4 py-2 rounded-full text-sm font-bold transition-all",
+                  "px-4 py-2 rounded-full text-sm font-medium transition-all",
                   pathname === link.href
-                    ? "text-foreground bg-muted"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                    ? "text-primary bg-primary/10"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted",
                 )}
               >
                 {link.name}
@@ -188,14 +190,13 @@ export function Header() {
         <div className="flex items-center gap-3">
           <Link
             href="/apoyo"
-            className="hidden sm:flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-red-500 transition-colors"
+            className="hidden sm:flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-accent transition-colors"
           >
-            <Heart className="h-4 w-4 fill-current" />
+            <Heart className="h-4 w-4" />
             Apoyar
           </Link>
 
           {loading ? (
-            // Skeleton mientras verifica la sesión
             <div className="hidden md:flex items-center gap-2.5 pl-1 pr-3 py-1">
               <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
               <div className="space-y-1.5">
@@ -206,14 +207,14 @@ export function Header() {
           ) : user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="hidden md:flex items-center gap-2.5 pl-1 pr-3 py-1 rounded-xl hover:bg-muted/60 transition-colors">
+                <button className="hidden md:flex items-center gap-2.5 pl-1 pr-3 py-1 rounded-xl hover:bg-muted transition-colors">
                   <div className="h-8 w-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-                    <span className="text-sm font-black text-primary">
+                    <span className="text-sm font-bold text-primary">
                       {initial}
                     </span>
                   </div>
                   <div className="text-left">
-                    <p className="text-sm font-bold leading-none">
+                    <p className="text-sm font-semibold leading-none text-foreground">
                       {user.username}
                     </p>
                     <p className="text-[10px] text-muted-foreground leading-none mt-0.5">
@@ -227,7 +228,7 @@ export function Header() {
                 <DropdownMenuItem asChild>
                   <Link
                     href="/dashboard"
-                    className="flex items-center gap-2 font-semibold"
+                    className="flex items-center gap-2 font-medium"
                   >
                     <LayoutDashboard className="h-4 w-4" />
                     Mi panel
@@ -239,7 +240,7 @@ export function Header() {
                   className="text-destructive focus:text-destructive gap-2 cursor-pointer"
                 >
                   <LogOut className="h-4 w-4" />
-                  Cerrar sesión
+                  Cerrar sesion
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -248,14 +249,14 @@ export function Header() {
               <Link href="/login">
                 <Button
                   variant="ghost"
-                  className="hidden md:flex font-bold rounded-xl"
+                  className="hidden md:flex font-medium rounded-xl"
                 >
-                  Iniciar Sesión
+                  Iniciar Sesion
                 </Button>
               </Link>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button className="font-black px-5 rounded-xl">
+                  <Button className="font-semibold px-5 rounded-full bg-primary hover:bg-primary/90">
                     Registrarse
                   </Button>
                 </DropdownMenuTrigger>
@@ -266,7 +267,7 @@ export function Header() {
                       className="flex items-center gap-2"
                     >
                       <Building2 className="h-4 w-4" />
-                      Fundación
+                      Fundacion
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>

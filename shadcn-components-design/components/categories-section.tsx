@@ -1,36 +1,48 @@
 "use client";
 import { useCategoryStore } from "@/store/useCategoryStore";
 import { Badge } from "@/components/ui/badge";
-import { GraduationCap, Briefcase, Users, LayoutGrid } from "lucide-react";
+import { GraduationCap, Briefcase, Users, Palette, Heart } from "lucide-react";
+import { cn } from "@/lib/utils";
+
 const categories = [
   { id: "comunidad", label: "Comunidad", icon: Users },
-  { id: "educacion", label: "Educación", icon: GraduationCap },
+  { id: "educacion", label: "Educacion", icon: GraduationCap },
   { id: "empleo", label: "Empleo", icon: Briefcase },
+  { id: "artesanias", label: "Artesanias", icon: Palette },
+  { id: "bienestar", label: "Bienestar", icon: Heart },
 ];
 
 export function CategoriesSection() {
   const { selectedCategoryName, setCategory } = useCategoryStore();
 
   return (
-    <section className="px-4 py-3">
-      <div className="flex flex-wrap gap-3">
-        <Badge
-          variant={selectedCategoryName === null ? "default" : "outline"}
+    <section className="py-4">
+      <div className="flex flex-wrap gap-2">
+        <button
           onClick={() => setCategory(null)}
-          className="cursor-pointer px-4 py-2 rounded-full"
+          className={cn(
+            "inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200",
+            selectedCategoryName === null
+              ? "bg-primary text-primary-foreground shadow-md"
+              : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+          )}
         >
-          Todos
-        </Badge>
+          Todas las categorias
+        </button>
         {categories.map((cat) => (
-          <Badge
-            key={cat.label}
-            variant={selectedCategoryName === cat.id ? "default" : "outline"}
+          <button
+            key={cat.id}
             onClick={() => setCategory(cat.id)}
-            className="flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer transition-colors"
+            className={cn(
+              "inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200",
+              selectedCategoryName === cat.id
+                ? "bg-primary text-primary-foreground shadow-md"
+                : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+            )}
           >
             <cat.icon className="h-4 w-4" />
             {cat.label}
-          </Badge>
+          </button>
         ))}
       </div>
     </section>
