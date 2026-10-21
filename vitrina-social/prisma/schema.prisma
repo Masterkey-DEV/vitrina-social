@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  type  String @default("custom")
+  users User[]
+}
+
+model User {
+  id                Int         @id @default(autoincrement())
+  documentId        String      @unique @default(uuid())
+  username          String      @unique
+  email             String      @unique
+  password          String
+  provider          String      @default("local")
+  confirmed         Boolean     @default(false)
+  blocked           Boolean     @default(false)
+  fullName          String?
+  phone             String?     @unique
+  whatsapp          String?     @unique
+  address           String?
+  city              String?
+  department        String?
+  bio               String?
+  receiveNewsletter Boolean     @default(false)
+  receiveUpdates    Boolean     @default(false)
+  roleId            Int?
+  role              Role?       @relation(fields: [roleId], references: [id])
+  foundation        Foundation?
+  initiatives       Initiative[] @relation("InitiativeMembers")
+  products          Product[]
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+}
+
+model Foundation {
+  id          Int          @id @default(autoincrement())
+  documentId  String       @unique @default(uuid())
+  name        String       @unique
+  siglas      String       @unique
+  objective   String?
+  description String?
+  whatsapp    String?
+  facebook    String?
+  instagram   String?
+  website     String?
+  twitter     String?
+  linkedin    String?
+  department  String?
+  city        String?
+  location    String?
+  phone       String?
+  imageId     Int?         @unique
+  image       Media?       @relation(fields: [imageId], references: [id], onDelete: SetNull)
+  usuarioId   Int?         @unique
+  usuario     User?        @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  iniciatives Initiative[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  publishedAt DateTime?
+}
+
+model Initiative {
+  id                     Int                 @id @default(autoincrement())
+  documentId             String              @unique @default(uuid())
+  title                  String
+  objective              String
+  description            String?
+  foundationId           Int?
+  foundation             Foundation?         @relation(fields: [foundationId], references: [id], onDelete: SetNull)
+  images                 Media[]             @relation("InitiativeImages")
+  initiatives_categories InitiativeCategory[] @relation("InitiativeCategories")
+  users                  User[]              @relation("InitiativeMembers")
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime            @updatedAt
+  publishedAt            DateTime?
+}
+
+model Product {
+  id                 Int               @id @default(autoincrement())
+  documentId         String            @unique @default(uuid())
+  name               String
+  slug               String
+  shortDescription   String?
+  description        String?
+  price              Float?
+  stock              Int?
+  featured           Boolean           @default(false)
+  images             Media[]           @relation("ProductImages")
+  product_categories ProductCategory[] @relation("ProductCategories")
+  usuarioId          Int?
+  usuario            User?             @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  publishedAt        DateTime?
+}
+
+model ProductCategory {
+  id          Int       @id @default(autoincrement())
+  documentId  String    @unique @default(uuid())
+  name        String    @unique
+  products    Product[] @relation("ProductCategories")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime?
+}
+
+model InitiativeCategory {
+  id          Int          @id @default(autoincrement())
+  documentId  String       @unique @default(uuid())
+  name        String       @unique
+  initiatives Initiative[] @relation("InitiativeCategories")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  publishedAt DateTime?
+}
+
+model Media {
+  id              Int      @id @default(autoincrement())
+  documentId      String   @unique @default(uuid())
+  name            String
+  url             String
+  alternativeText String?
+  width           Int?
+  height          Int?
+  mime            String?
+  provider        String   @default("cloudinary")
+  products        Product[]    @relation("ProductImages")
+  initiatives     Initiative[] @relation("InitiativeImages")
+  foundations     Foundation[]
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+}
